@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sathyabama Canteen Management System</title>
+    <style>
+        /* Reset some default styling */
+        body, h1, h2, p, input, button {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            color: #333;
+        }
+
+        body {
+            background-color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .app-container {
+            background-color: #ffffff;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .nav-bar {
+            background-color: #3f51b5;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 1.4em;
+            color: #3f51b5;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #3f51b5;
+            padding-bottom: 5px;
+        }
+
+        .order-form, .receipt {
+            margin-top: 20px;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #3f51b5;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #303f9f;
+        }
+
+        .menu-items .menu-item {
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        table th {
+            background-color: #3f51b5;
+            color: white;
+        }
+
+        .receipt {
+            display: none;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .receipt p, .receipt ul {
+            margin: 10px 0;
+        }
+
+        .receipt ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .receipt ul li {
+            margin: 5px 0;
+        }
+
+        .validation-expired {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="nav-bar">
+        Sathyabama Canteen
+    </div>
+
+    <div class="container">
+        <h1>Welcome to the Canteen</h1>
+
+        <!-- Login Section -->
+        <h2>Login</h2>
+        <form id="loginForm">
+            <label for="username">Username</label>
+            <input type="text" id="username" required>
+            <label for="password">Password</label>
+            <input type="password" id="password" required>
+            <button type="submit">Login</button>
+        </form>
+        <p id="loginMessage"></p>
+
+        <!-- Order Form Section -->
+        <div class="order-form" style="display: none;">
+            <h2>Order Your Meal</h2>
+
+            <!-- Menu Items Section -->
+            <h3>Menu Items</h3>
+            <div class="menu-items" id="menuItems">
+                <!-- Items will be dynamically added here -->
+            </div>
+
+            <!-- Generate Bill Section -->
+            <h3>Add to Bill</h3>
+            <form id="generateBillForm">
+                <label for="billItemId">Item ID</label>
+                <input type="number" id="billItemId" required>
+                <label for="billQuantity">Quantity</label>
+                <input type="number" id="billQuantity" required>
+                <button type="submit">Add to Bill</button>
+            </form>
+
+            <!-- Bill Details -->
+            <h3>Your Bill</h3>
+            <table id="billTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Bill items will be dynamically added here -->
+                </tbody>
+            </table>
+
+            <h3 id="totalAmount">Total Amount: ₹0.00</h3>
+
+            <!-- Payment Section -->
+            <div class="payment-section">
+                <h3>Payment</h3>
+                <label for="upiId">Enter Your UPI ID</label>
+                <input type="text" id="upiId" placeholder="Enter UPI ID" required>
+                <label for="amountToPay">Amount to Pay</label>
+                <input type="number" id="amountToPay" step="0.01" readonly>
+                <button id="generateReceiptButton">Pay & Generate Receipt</button>
+                <button id="downloadReceiptButton" style="display: none;">Download Receipt</button>
+            </div>
+        </div>
+
+        <!-- Receipt Section -->
+        <div class="receipt" id="receiptSection">
+            <h2>Receipt</h2>
+            <p><strong>Thank you for your purchase!</strong></p>
+            <p><strong>Items:</strong></p>
+            <ul id="receiptItems"></ul>
+            <p><strong>Total Amount: </strong><span id="receiptTotalAmount">₹0.00</span></p>
+            <p><strong>Paid with UPI ID:</strong> <span id="receiptUpiId"></span></p>
+            <p><strong>Valid Until:</strong> <span id="receiptExpiry"></span></p>
+            <p id="validationMessage" class="validation-expired"></p>
+            <p><strong>Thank you for ordering from Sathyabama Canteen!</strong></p>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+    const { jsPDF } = window.jspdf;
+
+    const menu = JSON.parse(localStorage.getItem('menu')) || [
+        { id: 1, name: "Tea", price: 25 },
+        { id: 2, name: "Biscuits", price: 10 },
+        { id: 3, name: "Biriyani", price: 160 },
+        { id: 4, name: "Chicken Kothu", price: 180 },
+        { id: 5, name: "Chat Items", price: 50 },
+        { id: 6, name: "Bread Omelette", price: 45 },
+        { id: 7, name: "Dosa", price: 30 },
+        { id: 8, name: "Poori", price: 30 },
+        { id: 9, name: "Idli Vada", price: 30 },
+        { id: 10, name: "Lemon Juice", price: 45 },
+        { id: 11, name: "Watermelon Juice", price: 45 },
+        { id: 12, name: "Pomegranate Juice", price: 45 },
+        { id: 13, name: "Mango Juice", price: 45 },
+        { id: 14, name: "Orange Juice", price: 45 },
+        { id: 15, name: "Grape Juice", price: 45 },
+        { id: 16, name: "Ice Cream", price: 30 }
+    ];
+    const bill = JSON.parse(localStorage.getItem('bill')) || [];
+    const validUsername = "canteenadmin";
+    const validPassword = "admin123";
+
+    document.getElementById('loginForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        if (username === validUsername && password === validPassword) {
+            document.querySelector('.order-form').style.display = 'block';
+            document.getElementById('loginMessage').textContent = "Login successful!";
+            document.getElementById('loginForm').style.display = 'none';
+        } else {
+            document.getElementById('loginMessage').textContent = "Invalid credentials, please try again.";
+        }
+    });
+
+    document.getElementById('generateBillForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const itemId = parseInt(document.getElementById('billItemId').value);
+        const quantity = parseInt(document.getElementById('billQuantity').value);
+        const item = menu.find(m => m.id === itemId);
+        if (item) {
+            const total = item.price * quantity;
+            bill.push({ ...item, quantity, total });
+            updateBill();
+        }
+    });
+
+    function updateBill() {
+        const billTableBody = document.querySelector('#billTable tbody');
+        billTableBody.innerHTML = '';
+        let totalAmount = 0;
+        bill.forEach(item => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${item.id}</td>
+                <td>${item.name}</td>
+                <td>₹${item.price}</td>
+                <td>${item.quantity}</td>
+                <td>₹${item.total}</td>
+            `;
+            billTableBody.appendChild(row);
+            totalAmount += item.total;
+        });
+        document.getElementById('totalAmount').textContent = `Total Amount: ₹${totalAmount.toFixed(2)}`;
+        document.getElementById('amountToPay').value = totalAmount.toFixed(2);
+    }
+
+    document.getElementById('generateReceiptButton').addEventListener('click', function () {
+        const upiId = document.getElementById('upiId').value;
+        const totalAmount = parseFloat(document.getElementById('amountToPay').value);
+
+        const receipt = {
+            items: bill,
+            totalAmount: totalAmount,
+            upiId: upiId,
+            date: new Date(),
+        };
+
+        const expiryDate = new Date();
+        expiryDate.setMinutes(expiryDate.getMinutes() + 120); // 2 hours validity
+
+        const doc = new jsPDF();
+        doc.text(`Receipt - Sathyabama Canteen`, 10, 10);
+        doc.text(`UPI ID: ${receipt.upiId}`, 10, 20);
+        doc.text(`Total: ₹${receipt.totalAmount.toFixed(2)}`, 10, 30);
+        doc.text(`Date: ${receipt.date.toLocaleString()}`, 10, 40);
+        doc.text(`Valid Until: ${expiryDate.toLocaleString()}`, 10, 50);
+        doc.text(`Items:`, 10, 60);
+        receipt.items.forEach((item, index) => {
+            doc.text(`${item.name} x${item.quantity} = ₹${item.total.toFixed(2)}`, 10, 70 + index * 10);
+        });
+        doc.save('receipt.pdf');
+        document.getElementById('receiptSection').style.display = 'block';
+        document.getElementById('receiptItems').innerHTML = receipt.items.map(item => `<li>${item.name} x${item.quantity} - ₹${item.total.toFixed(2)}</li>`).join('');
+        document.getElementById('receiptTotalAmount').textContent = `₹${receipt.totalAmount.toFixed(2)}`;
+        document.getElementById('receiptUpiId').textContent = receipt.upiId;
+        document.getElementById('receiptExpiry').textContent = expiryDate.toLocaleString();
+        document.getElementById('validationMessage').textContent = `Receipt valid until: ${expiryDate.toLocaleString()}`;
+        document.getElementById('downloadReceiptButton').style.display = 'inline-block';
+    });
+</script>
+<!-- jsPDF Library for generating PDF receipts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<!-- QRCode Library for generating UPI QR codes -->
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs2@0.0.2/qrcode.min.js"></script>
+
+</body>
+</html>
